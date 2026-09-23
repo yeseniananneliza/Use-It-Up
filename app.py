@@ -310,7 +310,11 @@ with cook_tab:
                 tags_html = "".join(f'<span class="tag-pill">{t.title()}</span>' for t in r["tags"])
                 expiring_html = '<span class="expiring-pill">Uses expiring item</span>' if r["uses_expiring"] else ""
                 if r["missing"]:
-                    status_html = f'<div class="missing-text">Missing: {", ".join(sorted(r["missing"]))}</div>'
+                    missing_lines = []
+                    for ing in sorted(r["missing"]):
+                        amt = r.get("amounts", {}).get(ing, "")
+                        missing_lines.append(f"{ing.title()} ({amt})" if amt else ing.title())
+                    status_html = f'<div class="missing-text">Missing: {"; ".join(missing_lines)}</div>'
                 else:
                     status_html = '<div class="ready-text">You have everything for this one</div>'
 
