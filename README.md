@@ -3,7 +3,7 @@
 A minimal recipe matcher: tell it what's in your kitchen, it ranks recipes by
 match %, and surfaces the ones that use up ingredients you're about to waste.
 
-Built as a scoped product case study — problem framing, prioritization, and a
+Built as a scoped product case study: problem framing, prioritization, and a
 v1 build in a day rather than a polished/complete product.
 
 ## Run locally
