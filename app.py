@@ -146,6 +146,22 @@ st.markdown(
         background-color: #FFFDFB !important;
         color: #4A3F35 !important;
     }
+    div[data-testid="stExpanderDetails"] ul,
+    div[data-testid="stExpanderDetails"] ol {
+        margin-top: 0.15rem !important;
+        margin-bottom: 0.6rem !important;
+        padding-left: 1.3rem !important;
+    }
+    div[data-testid="stExpanderDetails"] li {
+        margin-bottom: 0.05rem !important;
+        line-height: 1.35 !important;
+    }
+    div[data-testid="stExpanderDetails"] p {
+        margin-bottom: 0.2rem !important;
+    }
+    div[data-testid="stExpanderDetails"] [data-testid="stMarkdownContainer"] {
+        margin-bottom: 0 !important;
+    }
 
     /* Multiselect tags */
     span[data-tag] {
@@ -162,6 +178,13 @@ st.markdown(
     div[data-baseweb="select"] input {
         color: #4A3F35 !important;
     }
+    /* Current Streamlit multiselect implementation (react-aria based) */
+    div[data-testid="stMultiSelect"] .react-aria-ComboBox,
+    div[data-testid="stMultiSelect"] .react-aria-ComboBox > div {
+        background-color: #FFFDFB !important;
+        border-radius: 12px !important;
+        border-color: #E8D3BF !important;
+    }
     ul[role="listbox"] {
         background-color: #FFFDFB !important;
     }
@@ -170,15 +193,20 @@ st.markdown(
     }
 
     /* Tabs */
-    button[data-baseweb="tab"] {
+    div[data-testid="stTab"] {
         font-family: 'Playfair Display', serif !important;
         font-size: 1.05rem !important;
-        color: #A68F7C !important;
     }
-    button[data-baseweb="tab"][aria-selected="true"] {
+    div[data-testid="stTab"] p {
+        color: #A68F7C !important;
+        font-family: 'Playfair Display', serif !important;
+        font-weight: 600 !important;
+    }
+    div[data-testid="stTab"][aria-selected="true"] p {
         color: #B4694A !important;
     }
-    div[data-baseweb="tab-highlight"] {
+    div[data-testid="stTabs"] [data-baseweb="tab-highlight"],
+    div[data-testid="stTabs"] [data-baseweb="tab-border"] {
         background-color: #B4694A !important;
     }
     </style>
@@ -253,7 +281,7 @@ results.sort(key=lambda r: (-len(r["uses_expiring"]), -r["match_pct"]))
 # ---------------------------------------------------------------------------
 # Tabs
 # ---------------------------------------------------------------------------
-cook_tab, about_tab = st.tabs(["What to Cook", "About This Project"])
+cook_tab, grocery_tab, about_tab = st.tabs(["What to Cook", "Grocery List", "About This Project"])
 
 with cook_tab:
     if expiring_set:
@@ -299,14 +327,19 @@ with cook_tab:
                 )
                 with st.expander(f"Instructions for {r['name']}"):
                     st.markdown(f"**Serves {r.get('servings', 2)}**")
-                    st.markdown("**Ingredients:**")
+                    ingredient_lines = []
                     for ing in r["ingredients"]:
                         amount = r.get("amounts", {}).get(ing, "")
-                        line = f"- **{ing.title()}:** {amount}" if amount else f"- {ing.title()}"
-                        st.markdown(line)
-                    st.markdown("**Steps:**")
-                    for i, step in enumerate(r.get("steps", []), start=1):
-                        st.markdown(f"{i}. {step}")
+                        if amount:
+                            ingredient_lines.append(f"- **{ing.title()}:** {amount}")
+                        else:
+                            ingredient_lines.append(f"- {ing.title()}")
+                    st.markdown("**Ingredients:**\n" + "\n".join(ingredient_lines))
+
+                    steps = r.get("steps", [])
+                    if steps:
+                        step_lines = [f"{i}. {step}" for i, step in enumerate(steps, start=1)]
+                        st.markdown("**Steps:**\n" + "\n".join(step_lines))
 
     st.divider()
     st.caption(
@@ -314,6 +347,52 @@ with cook_tab:
         "Dataset: 15 hand-curated recipes. Next iteration: real recipe API and "
         "persistent pantry."
     )
+
+with grocery_tab:
+    st.markdown("### Build a shopping list")
+    st.markdown(
+        '<div class="step-help">Pick the recipes you actually plan to cook this '
+        "week. We'll combine what's missing across all of them into one "
+        "deduplicated list, so you're not buying garlic three separate times."
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    pickable = [r for r in results if r["match_pct"] > 0]
+    recipe_names = [r["name"] for r in pickable]
+    chosen_names = st.multiselect(
+        "Recipes to shop for",
+        options=recipe_names,
+        default=recipe_names[:3] if recipe_names else [],
+    )
+
+    chosen = [r for r in pickable if r["name"] in chosen_names]
+
+    if not chosen:
+        st.info("Select one or more recipes above to build a shopping list.")
+    else:
+        # Union of missing ingredients across every chosen recipe, with amounts
+        # collected per recipe so nothing gets silently merged incorrectly.
+        grocery = {}
+        for r in chosen:
+            for ing in sorted(r["missing"]):
+                amount = r.get("amounts", {}).get(ing, "")
+                grocery.setdefault(ing, []).append((r["name"], amount))
+
+        st.markdown(f"**Shopping list for {len(chosen)} recipe(s):**")
+        lines = []
+        for ing in sorted(grocery.keys()):
+            uses = grocery[ing]
+            detail = "; ".join(
+                f"{amt} for {name}" if amt else name for name, amt in uses
+            )
+            lines.append(f"- **{ing.title()}** ({detail})")
+        st.markdown("\n".join(lines))
+
+        st.caption(
+            f"{len(grocery)} item(s) total, deduplicated across {len(chosen)} "
+            "recipe(s)."
+        )
 
 with about_tab:
     left, right = st.columns([2, 1])
@@ -332,9 +411,14 @@ the highest-leverage slice of the idea, cut down from a larger feature set
 (barcode scanning, price tracking, grocery-list generation) that wasn't
 necessary to test the core loop.
 
-**What I'd add next:** persistent pantry storage, a real recipe API instead
-of a hand-curated list, and a "generate my grocery list" step for whatever's
-still missing.
+**What I'd add next:** persistent pantry storage that remembers your
+kitchen across visits, and a real recipe API instead of a hand-curated
+list. Both need actual backend infrastructure (a database, an API key and
+service integration), so they're honest v2 scope rather than a today
+build. The grocery list generator below started in this same "next" list
+and got pulled forward into v1 once it was clear it was pure logic with no
+external dependency, that's the kind of call worth making explicitly
+rather than either building everything or deferring everything by default.
             """
         )
     with right:
