@@ -3,9 +3,9 @@ from recipes_data import RECIPES, ALL_INGREDIENTS
 
 st.set_page_config(page_title="PantryMatch", page_icon="🥕", layout="centered")
 
-# ---------------------------------------------------------------------------
+
 # Header
-# ---------------------------------------------------------------------------
+
 st.title("🥕 PantryMatch")
 st.caption("Tell it what's in your kitchen — it tells you what to cook, "
            "prioritizing what's about to go bad.")
@@ -31,9 +31,9 @@ still missing.
 
 st.divider()
 
-# ---------------------------------------------------------------------------
+
 # Pantry input
-# ---------------------------------------------------------------------------
+
 st.subheader("1. What's in your kitchen?")
 have = st.multiselect(
     "Select everything you currently have on hand",
@@ -49,9 +49,9 @@ expiring = st.multiselect(
 
 st.divider()
 
-# ---------------------------------------------------------------------------
+
 # Matching logic
-# ---------------------------------------------------------------------------
+
 have_set = set(have)
 expiring_set = set(expiring)
 
@@ -73,9 +73,9 @@ for r in RECIPES:
 # Rank: recipes that rescue expiring items float to the top, then by match %
 results.sort(key=lambda r: (-len(r["uses_expiring"]), -r["match_pct"]))
 
-# ---------------------------------------------------------------------------
+
 # Results
-# ---------------------------------------------------------------------------
+
 st.subheader("3. What to cook")
 
 if expiring_set:
