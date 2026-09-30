@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Use It Up | Cook with what you already have</title>
+<meta name="description" content="Find recipes that match the ingredients in your kitchen and use food before it goes to waste.">
+<meta property="og:title" content="Use It Up | Cook with what you already have">
+<meta property="og:description" content="Find recipes that match the ingredients in your kitchen and use food before it goes to waste.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='15' fill='%23C8311C'/><path d='M9 17c0 4 3 7 7 7s7-3 7-7H9z' fill='white'/><path d='M16 8c-2 2-2 4 0 6 2-2 2-4 0-6z' fill='white'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#C8311C; --brand-dark:#9E2412; --brand-tint:#FBE9E5;
+  --ink:#231D1A; --muted:#6B625C; --line:#E7E1DB; --paper:#FFFFFF; --shade:#F6F3F0;
+  --leaf:#2E7A4C; --leaf-tint:#E6F3EA; --butter:#FFF1C9; --butter-ink:#7A5600;
+  --font:'Libre Franklin', 'Helvetica Neue', Arial, sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:var(--font);color:var(--ink);background:var(--paper);font-size:16px;line-height:1.55}
+button,input,select{font:inherit;color:inherit}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* Header */
+.topbar{border-bottom:1px solid var(--line);background:var(--paper);position:sticky;top:0;z-index:30}
+.topbar .wrap{display:flex;align-items:center;gap:24px;height:68px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:800;font-size:1.55rem;letter-spacing:-.02em;color:var(--brand)}
+.logo svg{flex:none}
+.nav{display:flex;gap:4px;margin-left:auto}
+.nav button{background:none;border:0;padding:10px 14px;font-weight:600;cursor:pointer;border-radius:6px}
+.nav button:hover{background:var(--shade)}
+.nav .cart{display:flex;align-items:center;gap:8px;background:var(--brand);color:#fff}
+.nav .cart:hover{background:var(--brand-dark)}
+.count{background:#fff;color:var(--brand);border-radius:999px;min-width:22px;height:22px;display:inline-grid;place-items:center;font-size:.8rem;font-weight:800;padding:0 6px}
+.cats{border-bottom:1px solid var(--line);background:var(--paper)}
+.cats .wrap{display:flex;gap:6px;overflow-x:auto;padding-top:10px;padding-bottom:10px;scrollbar-width:none}
+.cats .wrap::-webkit-scrollbar{display:none}
+.cat{flex:none;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:7px 15px;font-weight:600;font-size:.92rem;cursor:pointer}
+.cat:hover{border-color:var(--ink)}
+.cat[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* Hero: the pantry search */
+.hero{background:var(--brand);color:#fff;padding:44px 0 40px}
+.hero h1{font-size:clamp(2rem,4.6vw,3.2rem);line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:0 0 10px;max-width:17ch}
+.hero p{margin:0 0 24px;font-size:1.08rem;max-width:56ch;opacity:.95}
+.searchbox{position:relative;max-width:720px}
+.searchbox input{width:100%;border:0;border-radius:10px;padding:18px 20px 18px 54px;font-size:1.08rem;color:var(--ink);box-shadow:0 6px 24px rgba(60,10,0,.25)}
+.searchbox svg{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.suggest{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;color:var(--ink);border-radius:10px;box-shadow:0 14px 34px rgba(0,0,0,.18);list-style:none;margin:0;padding:6px;z-index:20;max-height:300px;overflow:auto}
+.suggest li{padding:10px 14px;border-radius:6px;cursor:pointer;text-transform:capitalize}
+.suggest li[aria-selected="true"],.suggest li:hover{background:var(--brand-tint)}
+.suggest .none{color:var(--muted);cursor:default;text-transform:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;max-width:900px}
+.chip{display:inline-flex;align-items:center;background:#fff;color:var(--ink);border-radius:999px;font-size:.93rem;font-weight:600;overflow:hidden}
+.chip .name{padding:7px 4px 7px 14px;text-transform:capitalize}
+.chip button{border:0;background:none;cursor:pointer;padding:7px 10px;display:grid;place-items:center;color:var(--muted)}
+.chip .soon{font-size:.78rem;font-weight:700;padding:4px 9px;margin-left:6px;border-radius:999px;background:var(--shade);color:var(--muted)}
+.chip.expiring{background:var(--butter);box-shadow:inset 0 0 0 2px #E9B949}
+.chip.expiring .soon{background:#E9B949;color:#3d2b00}
+.hero-tools{display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-top:16px;font-size:.92rem}
+.linkbtn{background:none;border:0;color:#fff;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:0;font-weight:600}
+.hint{opacity:.9}
+.welcome{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);border-radius:12px;padding:18px 20px;max-width:720px;margin:0 0 20px}
+.welcome strong{display:block;font-size:1.1rem;margin-bottom:4px}
+.welcome p{margin:0 0 14px;font-size:.98rem}
+.welcome .row{display:flex;flex-wrap:wrap;gap:10px}
+.wbtn{border:0;border-radius:8px;padding:12px 18px;font-weight:700;cursor:pointer;background:#fff;color:var(--brand)}
+.wbtn:hover{background:var(--brand-tint)}
+.wbtn.line{background:none;color:#fff;box-shadow:inset 0 0 0 2px #fff}
+.wbtn.line:hover{background:rgba(255,255,255,.12)}
+.how{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;padding-top:28px}
+.how div{display:flex;gap:14px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.how b{flex:none;width:34px;height:34px;border-radius:999px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:800}
+.how strong{display:block;font-size:1.02rem}
+.how span{color:var(--muted);font-size:.9rem}
+.thumb .dish,.recipe-hero .dish{height:46%;aspect-ratio:1;display:grid;place-items:center;filter:none;background:none}
+.recipe-hero .dish{height:56%}
+.dish svg{width:100%;height:100%;color:#3B2E28;stroke-width:1.6}
+.card:hover .dish svg{color:var(--brand)}
+.ing-label{font-weight:800;font-size:.95rem;margin:4px 0 2px;display:flex;justify-content:space-between}
+.ing-label small{color:var(--muted);font-weight:600}
+.ing .swap{display:block;font-size:.86rem;color:var(--ink);margin-top:3px}
+.ing .swap b{color:var(--leaf)}
+.val{background:#fff;border-radius:10px;padding:18px 20px;margin:12px 0 4px;border-left:4px solid var(--leaf)}
+.val ol{margin:6px 0 0;padding-left:20px}
+.val li{margin-bottom:6px}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:48px;align-items:center}
+.tonight{background:#fff;color:var(--ink);border-radius:10px;overflow:hidden;box-shadow:0 14px 40px rgba(60,10,0,.3)}
+.tonight .thumb{border-radius:0;aspect-ratio:16/9;font-size:4.6rem}
+.tonight .in{padding:16px 20px 20px}
+.tonight .kicker{font-size:.84rem;font-weight:700;color:var(--brand)}
+.tonight h2{margin:2px 0 6px;font-size:1.4rem;line-height:1.15;letter-spacing:-.02em;font-weight:800}
+.tonight p{margin:0 0 14px;color:var(--muted);font-size:.93rem}
+.tonight .btn{width:100%}
+
+/* Results */
+.results{padding-top:36px;padding-bottom:20px}
+.results-head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px;margin-bottom:22px}
+.results-head h2{margin:0;font-size:1.75rem;letter-spacing:-.02em;font-weight:800}
+.results-head p{margin:4px 0 0;color:var(--muted)}
+.sort{display:flex;align-items:center;gap:8px;font-weight:600;font-size:.92rem}
+.sort select{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:28px 22px}
+.card{background:none;border:0;padding:0;text-align:left;cursor:pointer;display:flex;flex-direction:column}
+.thumb{position:relative;aspect-ratio:4/3;border-radius:8px;display:grid;place-items:center;overflow:hidden;font-size:4.2rem}
+.thumb .dish{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.photo{position:absolute;inset:0;display:block}
+.photo img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .flag{z-index:1}
+
+.flag{position:absolute;left:10px;top:10px;background:var(--butter);color:var(--butter-ink);font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:4px}
+.flag.ready{background:var(--leaf);color:#fff}
+.cuisine{color:var(--brand);font-weight:700;font-size:.82rem;margin-top:12px}
+.card h3{margin:2px 0 6px;font-size:1.14rem;line-height:1.25;font-weight:800;letter-spacing:-.01em}
+.card:hover h3{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px}
+.meter{display:flex;gap:3px;margin:4px 0 6px}
+.meter i{height:6px;flex:1;border-radius:2px;background:var(--line)}
+.meter i.on{background:var(--leaf)}
+.whyl{list-style:none;margin:0;padding:0;font-size:.88rem;color:var(--muted)}
+.whyl li{padding-left:16px;position:relative;margin-bottom:1px}
+.whyl li::before{content:"";position:absolute;left:3px;top:.55em;width:6px;height:6px;border-radius:999px;background:var(--leaf)}
+.whyl li.soonw{color:var(--butter-ink);font-weight:600}
+.whyl li.soonw::before{background:#E9B949}
+.whyl strong{color:var(--ink)}
+.meta{color:var(--muted);font-size:.88rem;display:flex;gap:14px;flex-wrap:wrap}
+.meta strong{color:var(--ink);font-weight:700}
+.empty{border:2px dashed var(--line);border-radius:10px;padding:40px 24px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--ink);font-size:1.15rem;margin-bottom:6px}
+
+/* Recipe page (dialog) */
+.overlay{position:fixed;inset:0;background:rgba(20,12,8,.55);z-index:50;display:none;overflow-y:auto;padding:24px 12px}
+.overlay.open{display:block}
+.recipe{background:#fff;max-width:900px;margin:0 auto;border-radius:10px;overflow:hidden;position:relative}
+.recipe .close{position:absolute;right:14px;top:14px;border:0;background:#fff;width:40px;height:40px;border-radius:999px;cursor:pointer;display:grid;place-items:center;box-shadow:0 2px 10px rgba(0,0,0,.15);z-index:2}
+.recipe-hero{aspect-ratio:21/6;display:grid;place-items:center;font-size:6.5rem;position:relative;overflow:hidden}
+.recipe-body{padding:28px clamp(18px,4vw,44px) 40px}
+.crumbs{font-size:.86rem;color:var(--muted);margin-bottom:6px}
+.crumbs b{color:var(--brand)}
+.recipe h2{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.08;letter-spacing:-.03em;margin:0 0 12px;font-weight:800}
+.status{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.pill{font-size:.84rem;font-weight:700;padding:5px 11px;border-radius:4px;background:var(--shade)}
+.pill.good{background:var(--leaf-tint);color:var(--leaf)}
+.pill.warn{background:var(--butter);color:var(--butter-ink)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));background:var(--shade);border-radius:8px;padding:16px 18px;gap:12px;margin-bottom:30px}
+.facts div{font-size:.84rem;color:var(--muted);font-weight:600}
+.facts strong{display:block;color:var(--ink);font-size:1.02rem}
+.stepper{display:inline-flex;align-items:center;gap:8px;margin-top:2px}
+.stepper button{width:28px;height:28px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;font-weight:800;line-height:1}
+.cols{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:40px}
+.cols h3{font-size:1.4rem;margin:0 0 14px;letter-spacing:-.02em;font-weight:800}
+.ing{list-style:none;padding:0;margin:0 0 18px}
+.ing li{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.ing .mark{flex:none;width:22px;height:22px;border-radius:999px;display:grid;place-items:center;font-size:.75rem;font-weight:800;margin-top:1px}
+.ing .have .mark{background:var(--leaf);color:#fff}
+.ing .need .mark{border:2px solid var(--brand);color:var(--brand)}
+.ing .item{font-weight:700;text-transform:capitalize}
+.ing .amt{display:block;color:var(--muted);font-size:.92rem}
+.ing .tag{font-size:.74rem;font-weight:700;background:var(--butter);color:var(--butter-ink);border-radius:4px;padding:1px 6px;margin-left:6px;text-transform:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:6px;padding:12px 18px;font-weight:700;cursor:pointer;background:var(--brand);color:#fff}
+.btn:hover{background:var(--brand-dark)}
+.btn.ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn.ghost:hover{background:var(--shade)}
+.btn[disabled]{background:var(--leaf);cursor:default}
+.dirs{list-style:none;padding:0;margin:0;counter-reset:s}
+.dirs li{counter-increment:s;padding:0 0 20px}
+.dirs li::before{content:"Step " counter(s);display:block;font-weight:800;margin-bottom:4px}
+.dirs li.done{color:var(--muted)}
+.dirs li.done::before{content:"Step " counter(s) " ✓";color:var(--leaf)}
+.dirs li{cursor:pointer}
+.dirs-note{font-size:.86rem;color:var(--muted);margin:-6px 0 14px}
+.recipe-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* Grocery drawer */
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100%);background:#fff;z-index:60;transform:translateX(100%);transition:transform .28s ease;display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.18)}
+.drawer.open{transform:none}
+.scrim{position:fixed;inset:0;background:rgba(20,12,8,.45);z-index:55;display:none}
+.scrim.open{display:block}
+.drawer header{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid var(--line)}
+.drawer h2{margin:0;font-size:1.4rem;font-weight:800;letter-spacing:-.02em}
+.drawer .body{padding:18px 22px;overflow-y:auto;flex:1}
+.drawer footer{padding:16px 22px;border-top:1px solid var(--line);display:flex;gap:10px}
+.iconbtn{border:0;background:var(--shade);width:38px;height:38px;border-radius:999px;cursor:pointer;display:grid;place-items:center}
+.planned{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 18px}
+.planned span{display:inline-flex;align-items:center;gap:4px;background:var(--shade);border-radius:4px;padding:4px 4px 4px 10px;font-size:.86rem;font-weight:600}
+.planned button{border:0;background:none;cursor:pointer;padding:2px 6px;color:var(--muted)}
+.glist{list-style:none;padding:0;margin:0}
+.glist li{border-bottom:1px solid var(--line)}
+.glist label{display:flex;gap:12px;padding:12px 0;cursor:pointer;align-items:flex-start}
+.glist input{width:20px;height:20px;accent-color:var(--leaf);margin-top:2px;flex:none}
+.glist .item{font-weight:700;text-transform:capitalize}
+.glist small{display:block;color:var(--muted);font-size:.84rem}
+.glist input:checked + span .item{text-decoration:line-through;color:var(--muted)}
+.label-sm{font-size:.86rem;color:var(--muted);font-weight:600;margin:0 0 8px}
+
+/* About */
+.about{background:var(--shade);padding:56px 0;margin-top:40px}
+.about .wrap{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:48px}
+.about h2{font-size:1.9rem;letter-spacing:-.02em;margin:0 0 16px;font-weight:800}
+.about h3{font-size:1.1rem;margin:22px 0 6px;font-weight:800}
+.about p{margin:0 0 10px;max-width:64ch}
+.facts-card{background:#fff;border-radius:10px;padding:22px;align-self:start;border-top:5px solid var(--brand)}
+.facts-card dl{margin:0}
+.facts-card dt{font-size:.84rem;color:var(--muted);font-weight:600}
+.facts-card dd{margin:0 0 14px;font-weight:800;font-size:1.3rem}
+footer.site{padding:28px 0 40px;color:var(--muted);font-size:.88rem}
+footer.site .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:8px;font-weight:600;z-index:80;transition:transform .25s ease}
+.toast.show{transform:translate(-50%,0)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (max-width:760px){
+  .nav .txt,.nav .navlink{display:none}
+  .cols{grid-template-columns:1fr;gap:24px}
+  .about .wrap{grid-template-columns:1fr;gap:28px}
+  .hero{padding:32px 0}
+  .hero-grid{grid-template-columns:1fr;gap:28px}
+  .how{grid-template-columns:1fr;gap:10px}
+  .recipe-hero{aspect-ratio:16/8}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+@media print{
+  .topbar,.cats,.hero,.results,.about,footer.site,.close,.recipe-actions,.drawer,.scrim{display:none!important}
+  .overlay{position:static;display:block;background:none;padding:0}
+  .recipe-hero{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="Use It Up home">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#C8311C"/><path d="M9 17c0 4 3 7 7 7s7-3 7-7H9z" fill="#fff"/><path d="M16 8c-2 2-2 4 0 6 2-2 2-4 0-6z" fill="#fff"/></svg>
+      Use It Up
+    </a>
+    <nav class="nav" aria-label="Main">
+      <button type="button" class="navlink" data-go="results">Recipes</button>
+      <button type="button" class="navlink" data-go="about">About the project</button>
+      <button type="button" class="cart" id="openList" aria-label="Open grocery list">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20.5" r="1.3"/><circle cx="18" cy="20.5" r="1.3"/></svg>
+        <span class="txt">Grocery list</span><span class="count" id="listCount">0</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<div class="cats" id="top">
+  <div class="wrap" role="toolbar" aria-label="Filter recipes" id="cats"></div>
+</div>
+
+<section class="hero">
+  <div class="wrap hero-grid">
+   <div>
+    <h1>Turn what's in your kitchen into your next meal.</h1>
+    <p>Add what you have, mark ingredients that need to be used soon, and find recipes that match your kitchen before anything goes to waste.</p>
+    <div class="welcome" id="welcome" hidden>
+      <strong>New here? Pick how to start.</strong>
+      <p>The sample kitchen loads a typical fridge so you can see how matching works in one click.</p>
+      <div class="row"><button class="wbtn" type="button" id="trySample">Try a sample kitchen</button><button class="wbtn line" type="button" id="startEmpty">Start with an empty kitchen</button></div>
+    </div>
+    <div class="searchbox">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <label for="pantryInput" class="sr">Add an ingredient</label>
+      <input id="pantryInput" type="text" autocomplete="off" placeholder="Add an ingredient, like eggs or spinach" role="combobox" aria-expanded="false" aria-controls="suggest" aria-autocomplete="list">
+      <ul class="suggest" id="suggest" role="listbox" hidden></ul>
+    </div>
+    <div class="chips" id="chips" aria-live="polite"></div>
+    <div class="hero-tools">
+      <span class="hint">Tap <b>Use soon</b> on anything about to expire.</span>
+      <button class="linkbtn" type="button" id="loadSample">Load sample kitchen</button>
+      <button class="linkbtn" type="button" id="clearPantry">Clear kitchen</button>
+    </div>
+   </div>
+   <aside class="tonight" id="tonight" aria-label="Best match for tonight"></aside>
+  </div>
+</section>
+
+<section class="how wrap" aria-label="How it works">
+  <div><b>1</b><p style="margin:0"><strong>Add what you have</strong><span>Type ingredients into the search bar.</span></p></div>
+  <div><b>2</b><p style="margin:0"><strong>Mark food that expires soon</strong><span>Tap "Use soon" and those recipes move to the top.</span></p></div>
+  <div><b>3</b><p style="margin:0"><strong>Find recipes and plan your list</strong><span>Open a recipe and add what's missing to one grocery list.</span></p></div>
+</section>
+
+<main class="results wrap" id="results">
+  <div class="results-head">
+    <div>
+      <h2 id="resultsTitle">Recipes for you</h2>
+      <p id="resultsSub"></p>
+    </div>
+    <label class="sort">Sort by
+      <select id="sortBy">
+        <option value="smart">Uses expiring food first</option>
+        <option value="match">Fewest missing ingredients</option>
+        <option value="time">Quickest</option>
+      </select>
+    </label>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<section class="about" id="about">
+  <div class="wrap">
+    <div>
+      <h2>About this project</h2>
+      <p>I built Use It Up as a scoped product case study. It answers one question at the moment people decide what to eat: what can I make with what I already have?</p>
+      <h3>The problem</h3>
+      <p>People overspend on groceries and throw food away, not because they lack recipes, but because nothing connects the recipes to what's actually in their fridge. Recipe sites start from the dish. This starts from the kitchen.</p>
+      <h3>Target user</h3>
+      <p>Students and early-career professionals cooking for one or two. They have ingredients at home but struggle to decide what to cook before those ingredients expire.</p>
+      <h3>What v1 does</h3>
+      <p>It ranks recipes by how many ingredients you already have and moves recipes that rescue soon-to-expire food to the top. The grocery list combines what's missing across every recipe you plan to cook, so you don't buy garlic three times.</p>
+      <h3>What I cut, and why</h3>
+      <p>Barcode scanning, price tracking and a live recipe API all need external services and would have delayed testing the core loop. The grocery list started on the "later" list and moved into v1 once it was clear it was pure logic with no dependencies. Your kitchen is saved in your browser, so it's still there when you come back.</p>
+      <h3>Validation and learnings</h3>
+      <div class="val">
+        <p style="margin:0"><strong>Testing in progress.</strong> I'm running short, moderated sessions where people open the site cold and plan a dinner from their own fridge. I'm tracking four questions:</p>
+        <ol>
+          <li>How long it takes to open a recipe they'd actually cook.</li>
+          <li>Whether "Use soon" makes sense without an explanation.</li>
+          <li>Whether the combined grocery list catches items they'd otherwise buy twice.</li>
+          <li>Which step causes the most hesitation.</li>
+        </ol>
+        <!-- RESULTS: replace this comment with 3-4 sentences of real findings after testing -->
+      </div>
+      <p>One change came from reviewing the first version: it opened with a kitchen already filled in, so it wasn't clear what was the user's and what was a demo. First-time visitors now choose between a sample kitchen and an empty one.</p>
+      <h3>How I'd measure success</h3>
+      <p>The share of sessions where someone opens a recipe, the share of people who mark at least one ingredient "Use soon," the share of recipe views that lead to a grocery-list addition, and the share of people who come back to a saved kitchen.</p>
+      <h3>What's next</h3>
+      <p>Swap the hand-written dataset for a recipe API, add accounts so a kitchen follows you across devices, and measure whether people who mark food as "use soon" actually cook it.</p>
+    </div>
+    <aside class="facts-card" aria-label="Project at a glance">
+      <dl>
+        <dt>Recipes</dt><dd id="factRecipes">25</dd>
+        <dt>Cuisines</dt><dd id="factCuisines">12</dd>
+        <dt>Built with</dt><dd>HTML, CSS, JavaScript</dd>
+        <dt>Built by</dt><dd>Yesenia Navarro</dd>
+      </dl>
+    </aside>
+  </div>
+</section>
+
+<footer class="site">
+  <div class="wrap">
+    <span>Use It Up, a product case study by Yesenia Navarro · <a href="https://github.com/yeseniananneliza/Use-It-Up" target="_blank" rel="noopener">GitHub</a></span>
+    <span>Recipes written for home cooks. Check doneness temperatures for meat and fish.</span>
+    <span class="credit">Photos from <a href="https://unsplash.com/?utm_source=use_it_up&amp;utm_medium=referral" target="_blank" rel="noopener">Unsplash</a></span>
+  </div>
+</footer>
+
+<!-- Recipe page -->
+<div class="overlay" id="overlay" aria-hidden="true">
+  <article class="recipe" role="dialog" aria-modal="true" aria-labelledby="rTitle" id="recipe"></article>
+</div>
+
+<!-- Grocery list -->
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dTitle" aria-hidden="true">
+  <header>
+    <h2 id="dTitle">Grocery list</h2>
+    <button class="iconbtn" type="button" id="closeList" aria-label="Close grocery list"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+  </header>
+  <div class="body" id="listBody"></div>
+  <footer>
+    <button class="btn" type="button" id="copyList">Copy list</button>
+    <button class="btn ghost" type="button" id="clearList">Clear list</button>
+  </footer>
+</aside>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const RECIPES = [
+  {name:"Veggie Fried Rice",cuisine:"Chinese",emoji:"🍚",tags:["dinner","quick","vegetarian"],time:20,servings:2,
+   amounts:{"rice":"2 cups cooked (day-old and cold works best)","egg":"2 large","soy sauce":"2 tbsp","frozen peas":"1/2 cup","carrot":"1 medium, diced","garlic":"2 cloves, minced","green onion":"2 stalks, sliced"},
+   steps:["Heat a large pan or wok over medium-high heat with 1 tbsp oil.","Crack the eggs into the pan and scramble until just set, about 1 minute. Move them to a plate.","Add another 1 tbsp oil. Add the carrot and garlic and sauté for 2 minutes.","Add the frozen peas and cook 2 more minutes until hot.","Add the cold rice, breaking up clumps with your spatula. Stir-fry 3 to 4 minutes until heated through and starting to crisp.","Push everything to one side, pour in the soy sauce, then stir to coat evenly.","Add the egg back in and toss to combine.","Turn off the heat, stir in the green onion and serve right away."]},
+  {name:"Pasta Aglio e Olio",cuisine:"Italian",emoji:"🍝",tags:["dinner","quick","vegetarian"],time:15,servings:2,
+   amounts:{"pasta":"7 oz (200 g) spaghetti or linguine","garlic":"4 cloves, thinly sliced","olive oil":"1/3 cup","red pepper flakes":"1/2 tsp","parmesan":"1/4 cup, grated","parsley":"2 tbsp, chopped"},
+   steps:["Bring a large pot of well-salted water to a boil over high heat.","Cook the pasta until al dente. Save 1/2 cup of pasta water, then drain.","While the pasta cooks, warm the olive oil in a large skillet over medium-low heat.","Add the garlic and cook slowly, stirring often, 3 to 4 minutes until pale golden. Don't let it brown or it turns bitter.","Add the red pepper flakes and stir for 30 seconds.","Add the pasta and about 3 tbsp pasta water. Toss over medium heat for 1 to 2 minutes until the sauce clings, adding more water if it looks dry.","Off the heat, toss in the parmesan and parsley. Salt to taste and serve."]},
+  {name:"Black Bean Tacos",cuisine:"Mexican",emoji:"🌮",tags:["dinner","quick","vegetarian"],time:15,servings:2,
+   amounts:{"black beans":"1 can (15 oz), drained and rinsed","tortilla":"4 to 6 small, corn or flour","onion":"1/2 medium, diced","cumin":"1 tsp","lime":"1, cut into wedges","cheese":"1/2 cup, shredded","cilantro":"2 tbsp, chopped"},
+   steps:["Heat 1 tbsp oil in a skillet over medium heat. Cook the onion 3 to 4 minutes until soft.","Add the beans and cumin. Cook 5 minutes, lightly mashing about half the beans with your spoon.","Season with salt and take off the heat.","Warm the tortillas in a dry pan over medium heat, 20 to 30 seconds per side.","Fill each tortilla with beans and top with cheese, cilantro and a squeeze of lime."]},
+  {name:"Chicken Stir Fry",cuisine:"Chinese",emoji:"🥡",tags:["dinner","quick"],time:25,servings:2,
+   amounts:{"chicken breast":"2 (about 1 lb), cut into 1-inch cubes","soy sauce":"3 tbsp","garlic":"3 cloves, minced","ginger":"1 tbsp, minced","bell pepper":"1, sliced","broccoli":"2 cups florets","rice":"1 1/2 cups uncooked, for serving"},
+   steps:["Start the rice: about 1 1/2 cups rice to 2 1/2 cups water, simmered covered for 18 minutes.","Pat the chicken dry and season with salt and pepper.","Heat 1 tbsp oil in a large pan over high heat until shimmering.","Sear the chicken in one layer for 3 to 4 minutes without moving, then stir and cook 2 to 3 more minutes until it reaches 165°F. Move to a plate.","Add 1 tbsp oil, then the garlic and ginger. Stir 30 seconds.","Add the bell pepper and broccoli and stir-fry 4 to 5 minutes until crisp-tender.","Return the chicken, add the soy sauce and toss 1 to 2 minutes until glazed. Serve over rice."]},
+  {name:"Overnight Oats",cuisine:"American",emoji:"🥣",tags:["breakfast","quick","vegetarian","no-cook"],time:5,servings:1,
+   amounts:{"oats":"1/2 cup rolled oats","milk":"1/2 cup","yogurt":"1/4 cup","honey":"1 tbsp","banana":"1/2, sliced","peanut butter":"1 tbsp"},
+   steps:["In a jar with a lid, stir together the oats, milk, yogurt and honey.","Cover and refrigerate at least 4 hours, ideally overnight. It keeps up to 3 days.","In the morning, stir again and add a splash of milk if it's too thick.","Top with banana and a drizzle of peanut butter."]},
+  {name:"Veggie Omelet",cuisine:"French",emoji:"🍳",tags:["breakfast","quick","vegetarian"],time:10,servings:1,
+   amounts:{"egg":"3 large","cheese":"1/4 cup, shredded","bell pepper":"1/4 cup, diced","onion":"2 tbsp, diced","spinach":"1 handful (about 1 cup)","butter":"1 tbsp"},
+   steps:["Whisk the eggs with a pinch of salt and pepper.","Melt the butter in a nonstick pan over medium heat.","Sauté the onion and bell pepper 2 to 3 minutes until soft.","Add the spinach and cook 30 to 60 seconds until wilted. Move the vegetables to a bowl.","Pour in the eggs and let them set undisturbed for about 1 minute over medium-low heat.","When the edges are set but the center is still a little wet, add the vegetables and cheese to one half.","Fold the other half over, cook 1 more minute and slide onto a plate."]},
+  {name:"Lentil Soup",cuisine:"Mediterranean",emoji:"🍲",tags:["dinner","vegetarian","batch-cook"],time:40,servings:4,
+   amounts:{"lentils":"1 cup dried green or brown, rinsed","onion":"1 medium, diced","carrot":"2 medium, diced","celery":"2 stalks, diced","garlic":"3 cloves, minced","vegetable broth":"6 cups","cumin":"1 1/2 tsp"},
+   steps:["Heat 2 tbsp oil in a large pot over medium heat.","Add the onion, carrot and celery. Cook 5 to 6 minutes until soft.","Add the garlic and cumin and stir for 1 minute.","Add the lentils and broth, turn the heat up and bring to a boil.","Lower the heat, partly cover and simmer 25 to 30 minutes until the lentils are tender.","Season with salt and pepper. For a thicker soup, blend 1 to 2 cups and stir it back in."]},
+  {name:"Caprese Salad",cuisine:"Italian",emoji:"🍅",tags:["lunch","quick","vegetarian","no-cook"],time:5,servings:2,
+   amounts:{"tomato":"2 large, sliced 1/4 inch thick","mozzarella":"8 oz fresh, sliced","basil":"1 handful fresh leaves","olive oil":"2 tbsp","balsamic vinegar":"1 tbsp, or balsamic glaze"},
+   steps:["Arrange tomato and mozzarella slices on a plate, overlapping and alternating.","Tuck basil leaves between the slices.","Drizzle with olive oil and balsamic.","Season with flaky salt and black pepper and serve at room temperature."]},
+  {name:"Turkey Chili",cuisine:"American",emoji:"🌶️",tags:["dinner","batch-cook"],time:35,servings:4,
+   amounts:{"ground turkey":"1 lb","black beans":"1 can (15 oz), drained and rinsed","tomato":"1 can (28 oz) crushed","onion":"1 medium, diced","garlic":"3 cloves, minced","chili powder":"2 tbsp","cumin":"1 tsp"},
+   steps:["Heat 1 tbsp oil in a large pot over medium-high heat.","Cook the onion 3 to 4 minutes until soft.","Add the turkey and break it up as it cooks, 5 to 6 minutes, until no longer pink.","Stir in the garlic, chili powder and cumin for 1 minute.","Add the tomatoes and beans and bring to a simmer.","Cover and simmer on low 20 to 25 minutes, stirring now and then, until thick. Salt to taste."]},
+  {name:"Greek Yogurt Parfait",cuisine:"Greek",emoji:"🍨",tags:["breakfast","quick","vegetarian","no-cook"],time:5,servings:1,
+   amounts:{"yogurt":"1 cup Greek yogurt","granola":"1/3 cup","honey":"1 tbsp","berries":"1/2 cup, fresh or thawed"},
+   steps:["Spoon a third of the yogurt into a glass.","Add a layer of granola, then berries.","Repeat until everything is used.","Drizzle honey over the top."]},
+  {name:"Shakshuka",cuisine:"Middle Eastern",emoji:"🥘",tags:["breakfast","dinner","vegetarian"],time:25,servings:2,
+   amounts:{"egg":"4 large","tomato":"1 can (28 oz) crushed","onion":"1 medium, diced","bell pepper":"1, diced","garlic":"3 cloves, minced","cumin":"1 tsp","paprika":"1 tsp"},
+   steps:["Heat 2 tbsp olive oil in a large skillet over medium heat.","Cook the onion and bell pepper 5 minutes until soft.","Stir in the garlic, cumin and paprika for 1 minute.","Add the tomatoes, season with salt and pepper and simmer uncovered 10 minutes.","Make 4 wells in the sauce and crack an egg into each.","Cover and cook on low 6 to 8 minutes, until the whites are set and the yolks are still runny.","Serve from the pan with bread."]},
+  {name:"Peanut Noodles",cuisine:"Thai",emoji:"🥜",tags:["dinner","quick","vegetarian"],time:15,servings:2,
+   amounts:{"noodles":"8 oz spaghetti or rice noodles","peanut butter":"1/3 cup","soy sauce":"3 tbsp","garlic":"2 cloves, minced","lime":"1, juiced","carrot":"1 medium, shredded","green onion":"2 stalks, sliced"},
+   steps:["Cook the noodles in salted boiling water. Save 1/4 cup of the water, then drain.","Whisk the peanut butter, soy sauce, garlic, lime juice and 2 to 3 tbsp warm water until smooth.","Toss the noodles in the sauce, adding more saved water if it's thick.","Top with carrot and green onion. Serve warm or cold."]},
+  {name:"Baked Salmon and Broccoli",cuisine:"American",emoji:"🐟",tags:["dinner"],time:25,servings:2,
+   amounts:{"salmon":"2 fillets, about 6 oz each","broccoli":"3 cups florets","lemon":"1, half sliced and half juiced","olive oil":"3 tbsp","garlic":"2 cloves, minced"},
+   steps:["Heat the oven to 400°F (200°C) and line a sheet pan with parchment.","Toss the broccoli with 2 tbsp olive oil, the garlic and a pinch of salt. Spread it on the pan.","Pat the salmon dry and set it among the broccoli. Drizzle with the rest of the oil and the lemon juice, season, and top each fillet with a lemon slice.","Bake 15 to 18 minutes, until the salmon flakes easily and the broccoli edges brown.","Serve with extra lemon."]},
+  {name:"Cheesy Quesadillas",cuisine:"Mexican",emoji:"🧀",tags:["lunch","dinner","quick","vegetarian"],time:10,servings:2,
+   amounts:{"tortilla":"4 large","cheese":"1 1/2 cups, shredded","onion":"1/4 cup, thinly sliced","bell pepper":"1/2 cup, thinly sliced","black beans":"1/2 cup, drained and rinsed"},
+   steps:["Sauté the onion and pepper in 1 tsp oil over medium heat for 3 to 4 minutes. Stir in the beans.","Wipe the skillet and return it to medium heat.","Lay in a tortilla, cover half with cheese and a quarter of the filling, then a little more cheese.","Fold it over and cook 2 to 3 minutes per side, pressing gently, until golden and melted.","Repeat with the rest and cut into wedges."]},
+  {name:"Banana Pancakes",cuisine:"American",emoji:"🥞",tags:["breakfast","vegetarian"],time:15,servings:2,
+   amounts:{"flour":"1 cup all-purpose","banana":"1 ripe, mashed","egg":"1 large","milk":"3/4 cup","butter":"2 tbsp melted, plus more for the pan","honey":"for serving"},
+   steps:["Whisk the flour with 1 tbsp sugar, 1 tsp baking powder and a pinch of salt.","In another bowl, whisk the banana, egg, milk and melted butter.","Stir the wet into the dry just until combined. Lumps are fine.","Heat a nonstick pan over medium heat with a little butter.","Pour 1/4 cup batter per pancake. Flip when bubbles form, 2 to 3 minutes, then cook 1 to 2 minutes more.","Serve warm with honey."]},
+  {name:"Aloo Gobi",cuisine:"Indian",emoji:"🥔",tags:["dinner","vegetarian"],time:35,servings:3,
+   amounts:{"potato":"2 medium, cut into 1-inch cubes","cauliflower":"1 small head, cut into florets","onion":"1 medium, diced","tomato":"1 large, chopped","garlic":"3 cloves, minced","ginger":"1 tbsp, minced","turmeric":"1/2 tsp","cumin":"1 tsp seeds or ground"},
+   steps:["Heat 3 tbsp oil in a wide pan over medium heat. Add the cumin and let it sizzle for 30 seconds.","Add the onion and cook 5 minutes until golden.","Stir in the garlic, ginger and turmeric for 1 minute.","Add the potato and cauliflower with 1 tsp salt. Toss to coat in the spices.","Add the tomato and 3 tbsp water. Cover and cook on medium-low 15 to 20 minutes, stirring every few minutes, until the potatoes are tender.","Uncover and cook 3 more minutes to dry out slightly. Serve with rice or flatbread."]},
+  {name:"Chana Masala",cuisine:"Indian",emoji:"🍛",tags:["dinner","vegetarian","batch-cook"],time:30,servings:4,
+   amounts:{"chickpeas":"2 cans (15 oz each), drained","onion":"1 large, finely diced","tomato":"1 can (15 oz) crushed","garlic":"4 cloves, minced","ginger":"1 tbsp, minced","garam masala":"2 tsp","cumin":"1 tsp","rice":"1 1/2 cups uncooked, for serving"},
+   steps:["Start the rice so it's ready when the curry is.","Heat 2 tbsp oil in a pot over medium heat. Cook the onion 7 to 8 minutes until deep golden.","Add the garlic, ginger, cumin and garam masala. Stir 1 minute.","Add the tomatoes and 1 tsp salt and cook 5 minutes until the oil starts to separate.","Add the chickpeas and 3/4 cup water. Simmer 12 to 15 minutes, mashing a few chickpeas to thicken the sauce.","Taste for salt and serve over rice."]},
+  {name:"Pad Thai",cuisine:"Thai",emoji:"🍜",tags:["dinner"],time:30,servings:2,
+   amounts:{"rice noodles":"6 oz flat rice noodles","egg":"2 large","tofu":"7 oz firm, cubed","bean sprouts":"1 cup","peanuts":"1/4 cup, chopped","lime":"1, cut into wedges","green onion":"3 stalks, cut into 2-inch pieces","fish sauce":"2 tbsp","brown sugar":"2 tbsp"},
+   steps:["Soak the noodles in hot tap water for 8 to 10 minutes until bendable but still firm. Drain.","Mix the fish sauce, brown sugar and juice of half the lime in a small bowl.","Heat 2 tbsp oil in a wok over medium-high heat. Brown the tofu 4 to 5 minutes and push it aside.","Crack in the eggs and scramble until just set.","Add the noodles and sauce and toss 2 to 3 minutes until the noodles are soft and glossy. Add a splash of water if they stick.","Toss in the bean sprouts and green onion for 30 seconds.","Top with peanuts and serve with lime wedges."]},
+  {name:"Thai Green Curry",cuisine:"Thai",emoji:"🥥",tags:["dinner"],time:30,servings:3,
+   amounts:{"chicken breast":"1 lb, thinly sliced","coconut milk":"1 can (13.5 oz)","green curry paste":"2 to 3 tbsp","bell pepper":"1, sliced","basil":"1 handful","fish sauce":"1 tbsp","rice":"1 1/2 cups uncooked, for serving"},
+   steps:["Start the rice.","Spoon the thick cream from the top of the coconut milk into a pot over medium heat. Simmer 2 minutes until it looks oily.","Stir in the curry paste and fry 1 minute until fragrant.","Add the chicken and cook 3 minutes, stirring to coat.","Pour in the rest of the coconut milk and the fish sauce. Simmer 8 to 10 minutes until the chicken is cooked through.","Add the bell pepper and cook 2 minutes more.","Stir in the basil off the heat and serve over rice."]},
+  {name:"Mapo Tofu",cuisine:"Chinese",emoji:"🌶️",tags:["dinner","quick"],time:20,servings:2,
+   amounts:{"tofu":"14 oz soft or medium, in 1-inch cubes","ground pork":"4 oz","chili bean paste":"2 tbsp (doubanjiang)","garlic":"2 cloves, minced","ginger":"1 tsp, minced","soy sauce":"1 tbsp","green onion":"2 stalks, sliced","rice":"1 cup uncooked, for serving"},
+   steps:["Start the rice.","Simmer the tofu cubes in lightly salted water for 2 minutes to firm them up. Drain gently.","Heat 1 tbsp oil in a wok over medium-high heat. Cook the pork 3 minutes until browned.","Add the chili bean paste, garlic and ginger and stir 1 minute until the oil turns red.","Add 3/4 cup water and the soy sauce and bring to a simmer.","Slide in the tofu and simmer 4 to 5 minutes, nudging it gently so it doesn't break.","Thicken with 1 tsp cornstarch mixed in 1 tbsp water if you have it. Top with green onion and serve over rice."]},
+  {name:"Bibimbap",cuisine:"Korean",emoji:"🍱",tags:["dinner"],time:35,servings:2,
+   amounts:{"rice":"1 1/2 cups uncooked","egg":"2 large","spinach":"4 cups","carrot":"1 medium, cut into matchsticks","zucchini":"1 small, cut into matchsticks","gochujang":"2 tbsp","sesame oil":"2 tbsp","garlic":"2 cloves, minced"},
+   steps:["Cook the rice.","Blanch the spinach in boiling water for 30 seconds, squeeze dry, and toss with 1 tsp sesame oil, half the garlic and a pinch of salt.","Heat 1 tsp oil in a pan over medium-high heat. Sauté the carrot 2 minutes with a pinch of salt. Set aside.","Sauté the zucchini with the rest of the garlic for 2 minutes. Set aside.","Fry the eggs sunny side up.","Mix the gochujang with 1 tbsp sesame oil and 1 tsp water for the sauce.","Divide rice into bowls, arrange the vegetables on top, add an egg and drizzle with sauce. Mix everything together before eating."]},
+  {name:"Miso Soup",cuisine:"Japanese",emoji:"🥢",tags:["lunch","quick","vegetarian"],time:10,servings:2,
+   amounts:{"miso paste":"3 tbsp","tofu":"7 oz silken, cubed","green onion":"2 stalks, sliced","wakame":"1 tbsp dried","vegetable broth":"4 cups, or dashi"},
+   steps:["Soak the wakame in warm water for 5 minutes, then drain.","Heat the broth in a pot over medium heat until steaming. Don't let it boil.","Whisk the miso with a ladle of hot broth until smooth, then stir it into the pot.","Add the tofu and wakame and warm for 2 minutes.","Top with green onion and serve."]},
+  {name:"Falafel Bowl",cuisine:"Middle Eastern",emoji:"🧆",tags:["lunch","dinner","vegetarian"],time:35,servings:2,
+   amounts:{"chickpeas":"1 can (15 oz), drained and patted dry","onion":"1/4 cup, chopped","garlic":"2 cloves","parsley":"1/2 cup packed","cumin":"1 tsp","flour":"3 tbsp","cucumber":"1, diced","tomato":"1, diced","tahini":"3 tbsp","lemon":"1"},
+   steps:["Pulse the chickpeas, onion, garlic, parsley, cumin and 1/2 tsp salt in a food processor until coarse, like wet sand.","Stir in the flour. Shape into 10 small patties and chill 10 minutes if you have time.","Heat 1/4 inch of oil in a skillet over medium-high heat. Fry the patties 3 to 4 minutes per side until deep golden. Drain on paper towels.","Whisk the tahini with the juice of half the lemon, a pinch of salt and 2 to 3 tbsp water until pourable.","Toss the cucumber and tomato with the rest of the lemon juice and salt.","Build bowls with the salad and falafel and drizzle with tahini sauce."]},
+  {name:"Jollof Rice",cuisine:"West African",emoji:"🍛",tags:["dinner","batch-cook"],time:50,servings:4,
+   amounts:{"rice":"2 cups long-grain, rinsed","tomato":"2 large, chopped","bell pepper":"1 red, chopped","onion":"1 large, half chopped and half sliced","tomato paste":"3 tbsp","chicken broth":"2 1/2 cups","thyme":"1 tsp dried","curry powder":"1 tsp"},
+   steps:["Blend the tomatoes, bell pepper and chopped onion until smooth.","Heat 1/4 cup oil in a heavy pot over medium heat. Cook the sliced onion 4 minutes until soft.","Add the tomato paste and fry 3 minutes, stirring, until it darkens.","Pour in the blended sauce, thyme, curry powder and 1 tsp salt. Simmer 15 minutes until thick and reduced by about a third.","Stir in the rice and broth and bring to a boil.","Cover tightly, turn the heat to low and cook 25 minutes without stirring.","Take off the heat, rest 5 minutes covered, then fluff and serve."]},
+  {name:"Vietnamese Noodle Salad",cuisine:"Vietnamese",emoji:"🥗",tags:["lunch","dinner","no-cook"],time:20,servings:2,
+   amounts:{"rice noodles":"6 oz thin rice vermicelli","cucumber":"1, cut into matchsticks","carrot":"1, cut into matchsticks","lettuce":"2 cups, shredded","mint":"1 handful","peanuts":"1/4 cup, chopped","lime":"2, juiced","fish sauce":"3 tbsp","garlic":"1 clove, minced"},
+   steps:["Cook the noodles according to the package, usually 3 to 4 minutes. Rinse under cold water and drain well.","Whisk the lime juice, fish sauce, garlic, 2 tbsp sugar and 1/4 cup water until the sugar dissolves.","Divide the lettuce between bowls and top with noodles, cucumber, carrot and mint.","Sprinkle with peanuts and pour the dressing over just before eating."]}
+];
+RECIPES.forEach(r => r.ingredients = Object.keys(r.amounts));
+
+const SUBS = {"butter":"olive oil or any neutral oil","milk":"any plant milk","yogurt":"sour cream, or leave it out","honey":"maple syrup or sugar","parmesan":"any hard cheese, or skip it and add a pinch more salt","parsley":"cilantro, basil or green onion","cilantro":"parsley or green onion","basil":"parsley or a handful of spinach","lime":"lemon or a splash of vinegar","lemon":"lime or a splash of vinegar","soy sauce":"tamari, or salt plus a dash of Worcestershire","fish sauce":"soy sauce plus a squeeze of lime","green onion":"a little finely diced onion or chives","ginger":"1/4 tsp ground ginger per tbsp fresh","garlic":"1/8 tsp garlic powder per clove","cumin":"chili powder or smoked paprika","paprika":"chili powder","chili powder":"paprika plus a pinch of cayenne","red pepper flakes":"black pepper or a few drops of hot sauce","vegetable broth":"chicken broth, or water plus a bouillon cube","chicken broth":"vegetable broth, or water plus a bouillon cube","frozen peas":"any frozen or diced vegetable","carrot":"bell pepper or zucchini","bell pepper":"carrot, zucchini or onion","zucchini":"bell pepper or spinach","spinach":"kale or any leafy green","broccoli":"green beans or cauliflower","cauliflower":"broccoli or extra potato","celery":"a little extra onion and carrot","black beans":"pinto or kidney beans","chickpeas":"white beans","tortilla":"pita or bread for a wrap","noodles":"any pasta","rice noodles":"thin spaghetti","pasta":"any shape you have","rice":"quinoa or couscous","tofu":"chicken or chickpeas","chicken breast":"chicken thighs or tofu","ground turkey":"ground beef, ground chicken or cooked lentils","ground pork":"ground chicken or chopped mushrooms","salmon":"any firm white fish","cheese":"any cheese that melts","mozzarella":"burrata or fresh feta","balsamic vinegar":"red wine vinegar plus a pinch of sugar","granola":"toasted oats or chopped nuts","berries":"banana or any fresh fruit","peanut butter":"any nut butter or tahini","tahini":"peanut butter thinned with lemon juice","coconut milk":"heavy cream, added at the end","green curry paste":"red curry paste","gochujang":"sriracha plus a little honey","chili bean paste":"chili garlic sauce plus a little miso","sesame oil":"any oil plus toasted sesame seeds","brown sugar":"white sugar or honey","tomato paste":"extra tomato, cooked down longer","peanuts":"cashews or sesame seeds","bean sprouts":"shredded cabbage","mint":"basil or cilantro","lettuce":"cabbage or spinach","cucumber":"celery or bell pepper","wakame":"a handful of spinach","thyme":"oregano","curry powder":"garam masala","garam masala":"curry powder","turmeric":"curry powder","potato":"sweet potato","onion":"shallot or leek","tomato":"canned diced tomatoes","banana":"applesauce"};
+const ICONS = {
+ bowl:'<path d="M8 22h32a16 16 0 0 1-32 0z"/><path d="M18 40h12"/><path d="M19 16c0-3 3-3 3-6M26 16c0-3 3-3 3-6"/>',
+ pan:'<circle cx="20" cy="26" r="12"/><circle cx="20" cy="26" r="4"/><path d="M32 26h12"/>',
+ plate:'<circle cx="25" cy="24" r="13"/><circle cx="25" cy="24" r="8"/><path d="M5 10v7a2 2 0 0 0 4 0v-7M7 19v19"/><path d="M44 10c-3 2-3 10 0 12v16"/>',
+ noodles:'<path d="M8 24h32a16 16 0 0 1-32 0z"/><path d="M13 24c2-4 4-4 6 0s4 4 6 0 4-4 6 0"/><path d="M30 5l-7 16M38 7 26 21"/>',
+ taco:'<path d="M6 34a18 18 0 0 1 36 0z"/><path d="M12 30c3-6 7-8 12-8s9 2 12 8"/>',
+ pot:'<path d="M10 20h28v14a6 6 0 0 1-6 6H16a6 6 0 0 1-6-6z"/><path d="M7 20h34M20 14h8M10 25H6M38 25h4"/>',
+ stack:'<path d="M8 34a16 4 0 0 0 32 0M8 29a16 4 0 0 0 32 0M8 34v-10M40 34v-10"/><ellipse cx="24" cy="24" rx="16" ry="4"/><path d="M21 20c0-3 6-3 6 0"/>',
+ salad:'<path d="M8 24h32a16 16 0 0 1-32 0z"/><path d="M17 24c0-6 4-9 8-9M25 24c0-5 5-8 9-7M14 22c-2-4 0-7 3-8"/>',
+ glass:'<path d="M14 8h20l-3 32H17z"/><path d="M15 18h18M16 28h16"/>'
+};
+const ICON_OF = {"Veggie Fried Rice":"pan","Pasta Aglio e Olio":"noodles","Black Bean Tacos":"taco","Chicken Stir Fry":"pan","Overnight Oats":"glass","Veggie Omelet":"pan","Lentil Soup":"pot","Caprese Salad":"plate","Turkey Chili":"pot","Greek Yogurt Parfait":"glass","Shakshuka":"pan","Peanut Noodles":"noodles","Baked Salmon and Broccoli":"plate","Cheesy Quesadillas":"taco","Banana Pancakes":"stack","Aloo Gobi":"plate","Chana Masala":"pot","Pad Thai":"noodles","Thai Green Curry":"bowl","Mapo Tofu":"bowl","Bibimbap":"bowl","Miso Soup":"bowl","Falafel Bowl":"salad","Jollof Rice":"pot","Vietnamese Noodle Salad":"salad"};
+const icon = r => `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[ICON_OF[r.name]||"plate"]}</svg>`;
+/* Food photos: free Unsplash License only (no Unsplash+ / Getty). Each id checked on its unsplash.com page.
+   A dish with no entry, or a photo that fails to load, falls back to its line icon. */
+const PHOTOS = {
+ "Pad Thai":{id:"1637806931098-af30b519be53",alt:"A plate of pad thai noodles on a wooden table"},           // John Aledia
+ "Veggie Fried Rice":{id:"1627308595186-e6bb36712645",alt:"A bowl of vegetable fried rice"},
+ "Pasta Aglio e Olio":{id:"1622973536968-3ead9e780960",alt:"A plate of spaghetti aglio e olio"},
+ "Chicken Stir Fry":{id:"1767974877206-a594e0b1008e",alt:"Stir-fried chicken and green peppers on a plate"},   // tommao wang
+ "Overnight Oats":{id:"1682622110332-d50f50b7146d",alt:"A bowl of oats topped with fresh fruit and nuts"},     // Alex Bayev
+ "Veggie Omelet":{id:"1510693206972-df098062cb71",alt:"An omelette with vegetables served in a skillet"},      // Eaters Collective
+ "Caprese Salad":{id:"1529312266912-b33cfce2eefd",alt:"Sliced tomatoes and mozzarella with basil and olive oil"}, // Markus Spiske
+ "Turkey Chili":{id:"1638329389022-daef2efb71b3",alt:"A bowl of chili topped with sour cream"},               // stephanie monfette
+ "Greek Yogurt Parfait":{id:"1654584240523-6b8d3f6c33b4",alt:"Two jars of yogurt layered with granola and strawberries"}, // Monika Grabkowska
+ "Shakshuka":{id:"1520218576172-c1a2df3fa5fc",alt:"Shakshuka with eggs in tomato and red pepper sauce in a skillet"}, // Jenn Kosar
+ "Cheesy Quesadillas":{id:"1673990349292-ed2dfa7988c9",alt:"A quesadilla cut in half on a plate"},         // Benjamin Guardia
+ "Banana Pancakes":{id:"1441850655526-e2881818c568",alt:"Banana pancakes topped with sliced banana and syrup"}, // emy
+ "Thai Green Curry":{id:"1761315412830-2f59480377b0",alt:"Close-up of Thai green curry with chili"},       // Diego Arenas de Rodrigo
+ "Bibimbap":{id:"1600289031464-74d374b64991",alt:"A bowl of bibimbap with rice, vegetables and a fried egg"}, // Nikolay Smeh
+ "Black Bean Tacos":{id:"1593759608136-45eb2ad9507d",alt:"Corn tortillas filled with black beans, grilled zucchini and pico de gallo, with salsa and lime wedges"}, // Quin Engle
+ "Baked Salmon and Broccoli":{id:"1539136788836-5699e78bfc75",alt:"Salmon with broccoli and quinoa on a plate"}, // Ella Olsson
+ "Miso Soup":{id:"1763470260582-894ae15f43bb",alt:"A bowl of miso soup with tofu and seaweed"},           // note thanun
+ "Falafel Bowl":{id:"1680405531955-8b4981bb1b0c",alt:"A bowl of falafel over hummus with purple cabbage, green sauce and fresh herbs"}, // Thomas Wavid Johns
+ "Jollof Rice":{id:"1665332195309-9d75071138f0",alt:"Jollof rice in a white dish with grilled fish and vegetables"}, // Keesha's Kitchen
+ "Lentil Soup":{id:"1659603851579-17755833517e",alt:"A bowl of smooth orange lentil soup topped with parsley, with red lentils scattered around it"}, // Green And Great
+ "Peanut Noodles":{id:"1592455552977-57c9896360c5",alt:"Wide noodles topped with peanuts, cilantro, shredded cucumber and chili"}, // Xiao Chu
+ "Aloo Gobi":{id:"1695720247911-817755ad7d02",alt:"A bowl of potato and cauliflower curry next to white rice"}, // Markus Winkler
+ "Chana Masala":{id:"1736680056470-948527554276",alt:"A metal pot of chickpea curry garnished with green chilies, surrounded by whole spices"}, // Nosh Caterers
+ "Mapo Tofu":{id:"1788603930622-636954e00065",alt:"Soft tofu cubes in red chili oil sauce topped with sliced green onions"}, // Zoshua Colah
+ "Vietnamese Noodle Salad":{id:"1689760661347-6b4d026fffae",alt:"A bowl of Vietnamese bún noodle salad"} // photographer not recorded; alt is generic until checked
+};
+/* Crops match each frame: cards 4:3, "best match" 16:9, recipe hero 21:6 (16:8 on phones). */
+const CROPS = {card:[[640,480]], tonight:[[640,360]], hero:[[1680,480],[800,400]]};
+const unsplashURL = (id,w,h,dpr=1) => `https://images.unsplash.com/photo-${id}?w=${w}&h=${h}&dpr=${dpr}&fit=crop&crop=entropy&auto=format&q=70`;
+function photo(r, slot){
+  const p = PHOTOS[r.name]; if(!p) return "";
+  const [[w,h],mob] = CROPS[slot];
+  const set = (w,h) => `${unsplashURL(p.id,w,h)} 1x, ${unsplashURL(p.id,w,h,2)} 2x`;
+  const source = mob ? `<source media="(max-width:760px)" srcset="${set(mob[0],mob[1])}">` : "";
+  const lazy = slot === "card" ? ' loading="lazy"' : "";
+  return `<picture class="photo">${source}<img src="${unsplashURL(p.id,w,h)}" srcset="${set(w,h)}" width="${w}" height="${h}" alt="${esc(p.alt)}"${lazy} decoding="async" onerror="photoFailed(this)"></picture>`;
+}
+/* Icon stays underneath the photo; it is hidden from screen readers only while a photo is present. */
+const dish = (r, label, slot) => `<span class="dish" role="img" aria-label="${label}"${PHOTOS[r.name] ? ' aria-hidden="true"' : ""}>${icon(r)}</span>${photo(r, slot)}`;
+function photoFailed(img){
+  const pic = img.closest(".photo"); if(!pic) return;
+  const icon = pic.previousElementSibling;
+  if(icon && icon.classList.contains("dish")) icon.removeAttribute("aria-hidden");
+  pic.remove();
+}
+const TINTS = {"Chinese":"#FCE3D6","Italian":"#FDEBD3","Mexican":"#FFF0C7","American":"#E8EEF7","French":"#F4E9F7","Mediterranean":"#E7F1E1","Greek":"#E3EEF9","Middle Eastern":"#FBE6CF","Thai":"#E2F3E6","Indian":"#FFE7C2","Korean":"#FBE1E1","Japanese":"#EEF1F4","West African":"#FFE2CC","Vietnamese":"#E3F4EC"};
+const ALL = [...new Set(RECIPES.flatMap(r => r.ingredients))].sort();
+const CATS = [["all","All recipes"],["quick","Quick, 20 min or less"],["breakfast","Breakfast"],["lunch","Lunch"],["dinner","Dinner"],["vegetarian","Vegetarian"],["batch-cook","Batch cooking"],["no-cook","No-cook"],["saved","Saved recipes"],["ready","Ready to cook"]];
+
+/* ---------- state (saved in the browser when allowed) ---------- */
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem("uiu:"+k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem("uiu:"+k, JSON.stringify(v)); }catch(e){} }
+};
+const SAMPLE = ["egg","garlic","onion","rice","cheese","tomato","spinach","tortilla","black beans","bell pepper"];
+let onboarded = store.get("onboarded", false);
+let pantry = store.get("pantry", []);
+let expiring = store.get("expiring", []);
+let planned = store.get("planned", []);
+let checked = store.get("checked", []);
+let savedR = store.get("savedR", []);
+let cat = "all", sortBy = "smart", openName = null, scale = 1, serv = 2, doneSteps = new Set();
+const save = () => { store.set("onboarded",onboarded); store.set("pantry",pantry); store.set("expiring",expiring); store.set("planned",planned); store.set("checked",checked); store.set("savedR",savedR); };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+function score(r){
+  const have = r.ingredients.filter(i => pantry.includes(i));
+  const missing = r.ingredients.filter(i => !pantry.includes(i));
+  const rescue = r.ingredients.filter(i => expiring.includes(i));
+  return {...r, have, missing, rescue, pct: have.length / r.ingredients.length};
+}
+
+/* ---------- categories ---------- */
+function renderCats(){
+  $("#cats").innerHTML = CATS.map(([k,l]) => `<button class="cat" type="button" data-cat="${k}" aria-pressed="${k===cat}">${l}</button>`).join("");
+}
+$("#cats").addEventListener("click", e => {
+  const b = e.target.closest("[data-cat]"); if(!b) return;
+  cat = b.dataset.cat; renderCats(); renderGrid();
+  $("#results").scrollIntoView({block:"start"});
+});
+
+/* ---------- pantry ---------- */
+function renderChips(){
+  $("#chips").innerHTML = pantry.length ? pantry.map(i => {
+    const x = expiring.includes(i);
+    return `<span class="chip${x?" expiring":""}"><span class="name">${esc(i)}</span>
+      <button type="button" class="soon" data-soon="${esc(i)}" aria-pressed="${x}" aria-label="${x?"Unmark":"Mark"} ${esc(i)} as use soon">${x?"Use soon ✓":"Use soon"}</button>
+      <button type="button" data-remove="${esc(i)}" aria-label="Remove ${esc(i)}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M6 6l12 12M18 6 6 18"/></svg></button></span>`;
+  }).join("") : `<span class="hint">Your kitchen is empty. Start typing above to add ingredients.</span>`;
+}
+$("#chips").addEventListener("click", e => {
+  const s = e.target.closest("[data-soon]"), r = e.target.closest("[data-remove]");
+  if(s){ const i = s.dataset.soon; expiring = expiring.includes(i) ? expiring.filter(x=>x!==i) : [...expiring, i]; }
+  else if(r){ const i = r.dataset.remove; pantry = pantry.filter(x=>x!==i); expiring = expiring.filter(x=>x!==i); }
+  else return;
+  save(); renderChips(); renderGrid(); renderList();
+});
+$("#clearPantry").addEventListener("click", () => { pantry = []; expiring = []; save(); renderChips(); renderGrid(); renderList(); });
+
+const input = $("#pantryInput"), sug = $("#suggest");
+let sugIdx = 0, sugItems = [];
+function showSuggest(){
+  const q = input.value.trim().toLowerCase();
+  if(!q){ sug.hidden = true; input.setAttribute("aria-expanded","false"); return; }
+  sugItems = ALL.filter(i => !pantry.includes(i) && i.includes(q)).sort((a,b) => a.indexOf(q) - b.indexOf(q)).slice(0,8);
+  sugIdx = 0;
+  sug.innerHTML = sugItems.length
+    ? sugItems.map((i,n) => `<li role="option" id="opt${n}" data-add="${esc(i)}" aria-selected="${n===0}">${esc(i)}</li>`).join("")
+    : `<li class="none">No recipes use "${esc(q)}" yet. Try something like chicken, rice or tomato.</li>`;
+  sug.hidden = false; input.setAttribute("aria-expanded","true");
+}
+function addItem(i){
+  if(i && pantry.includes(i)){ toast(`${cap(i)} is already in your kitchen`); input.value = ""; sug.hidden = true; return; }
+  if(i && !pantry.includes(i)){ onboarded = true; renderWelcome(); pantry = [...pantry, i]; save(); renderChips(); renderGrid(); renderList(); }
+  input.value = ""; sug.hidden = true; input.setAttribute("aria-expanded","false"); input.focus();
+}
+input.addEventListener("input", showSuggest);
+input.addEventListener("keydown", e => {
+  if(sug.hidden || !sugItems.length){ if(e.key==="Escape") sug.hidden = true; return; }
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); sugIdx = (sugIdx + (e.key==="ArrowDown"?1:-1) + sugItems.length) % sugItems.length;
+    [...sug.children].forEach((li,n) => li.setAttribute("aria-selected", n===sugIdx)); input.setAttribute("aria-activedescendant","opt"+sugIdx); }
+  else if(e.key==="Enter"){ e.preventDefault(); addItem(sugItems[sugIdx]); }
+  else if(e.key==="Escape"){ sug.hidden = true; }
+});
+sug.addEventListener("mousedown", e => { const li = e.target.closest("[data-add]"); if(li){ e.preventDefault(); addItem(li.dataset.add); } });
+input.addEventListener("blur", () => setTimeout(() => sug.hidden = true, 120));
+
+/* ---------- recipe grid ---------- */
+$("#sortBy").addEventListener("change", e => { sortBy = e.target.value; renderGrid(); });
+function renderGrid(){
+  renderTonight();
+  let list = RECIPES.map(score);
+  if(cat==="saved") list = list.filter(r => savedR.includes(r.name));
+  else if(cat==="ready") list = list.filter(r => !r.missing.length);
+  else if(cat==="quick") list = list.filter(r => r.time <= 20);
+  else if(cat!=="all") list = list.filter(r => r.tags.includes(cat));
+  const byMatch = (a,b) => a.missing.length - b.missing.length || b.pct - a.pct;
+  if(sortBy==="smart") list.sort((a,b) => b.rescue.length - a.rescue.length || byMatch(a,b));
+  else if(sortBy==="match") list.sort(byMatch);
+  else list.sort((a,b) => a.time - b.time || byMatch(a,b));
+
+  const ready = list.filter(r => !r.missing.length).length;
+  const rescue = list.filter(r => r.rescue.length).length;
+  $("#resultsTitle").textContent = pantry.length ? `${list.length} recipes, sorted for your kitchen` : `${list.length} recipes to explore`;
+  $("#resultsSub").textContent = pantry.length
+    ? `${ready} you can make right now${expiring.length ? `, ${rescue} that use food you marked "use soon"` : ""}.`
+    : "Add a few ingredients above to see what you can make.";
+
+  $("#grid").innerHTML = list.length ? list.map(r => {
+    const flag = r.rescue.length ? `<span class="flag">Uses your ${esc(r.rescue[0])}${r.rescue.length>1?` +${r.rescue.length-1}`:""}</span>`
+      : !r.missing.length ? `<span class="flag ready">Ready to cook</span>` : "";
+    const bars = r.ingredients.map((_,n) => `<i class="${n < r.have.length ? "on":""}"></i>`).join("");
+    const need = r.missing.length ? `<span><strong>${r.missing.length}</strong> to buy</span>` : `<span><strong>Nothing</strong> to buy</span>`;
+    return `<button class="card" type="button" data-open="${esc(r.name)}">
+      <div class="thumb" style="background:#F3EEE8">${flag}${dish(r, `Illustration of ${esc(r.name)}, a ${esc(r.cuisine)} dish`, "card")}</div>
+      <span class="cuisine">${esc(r.cuisine)}</span>
+      <h3>${esc(r.name)}</h3>
+      <div class="meter" aria-label="You have ${r.have.length} of ${r.ingredients.length} ingredients">${bars}</div>
+      <ul class="whyl" aria-label="Why this matches"><li>You have <strong>${r.have.length} of ${r.ingredients.length}</strong> ingredients</li>${r.rescue.length ? `<li class="soonw">Uses ${esc(r.rescue.join(", "))} marked "Use soon"</li>` : ""}<li>Ready in <strong>${r.time} min</strong>${r.missing.length ? ` · ${r.missing.length} to buy` : " · nothing to buy"}</li></ul>
+    </button>`;
+  }).join("") : `<div class="empty"><strong>Nothing in this category yet</strong>Add more ingredients or pick a different category.</div>`;
+}
+$("#grid").addEventListener("click", e => { const c = e.target.closest("[data-open]"); if(c) openRecipe(c.dataset.open); });
+
+/* ---------- recipe page ---------- */
+function scaleAmt(txt){
+  if(scale===1) return txt;
+  return txt.replace(/(\d+)\s+(\d+)\/(\d+)|(\d+)\/(\d+)|(\d+(?:\.\d+)?)/, (m,w,n1,d1,n2,d2,dec) => {
+    let v = w ? +w + n1/d1 : n2 ? n2/d2 : +dec;
+    v *= scale;
+    const whole = Math.floor(v), frac = v - whole;
+    const fr = [[0,""],[.25,"1/4"],[.33,"1/3"],[.5,"1/2"],[.67,"2/3"],[.75,"3/4"],[1,""]].reduce((a,b) => Math.abs(b[0]-frac) < Math.abs(a[0]-frac) ? b : a);
+    const w2 = fr[0]===1 ? whole+1 : whole;
+    return (w2 ? w2 : "") + (w2 && fr[1] ? " " : "") + (fr[1] || (w2 ? "" : "0"));
+  });
+}
+let lastFocus = null;
+function openRecipe(name){
+  if(openName !== name){ scale = 1; serv = RECIPES.find(x => x.name === name).servings; doneSteps = new Set(); }
+  openName = name; lastFocus = document.activeElement;
+  renderRecipe();
+  $("#overlay").classList.add("open"); $("#overlay").setAttribute("aria-hidden","false");
+  $("#overlay").scrollTop = 0; document.body.style.overflow = "hidden";
+  $("#recipe .close").focus();
+}
+function closeRecipe(){
+  $("#overlay").classList.remove("open"); $("#overlay").setAttribute("aria-hidden","true");
+  document.body.style.overflow = ""; openName = null; if(lastFocus) lastFocus.focus();
+}
+function renderRecipe(){
+  const r = score(RECIPES.find(x => x.name === openName));
+  const serves = serv;
+  const inList = planned.includes(r.name);
+  const status = [
+    r.missing.length ? `<span class="pill">You have ${r.have.length} of ${r.ingredients.length} ingredients</span>` : `<span class="pill good">You have everything</span>`,
+    ...r.rescue.map(i => `<span class="pill warn">Uses your ${esc(i)} before it goes bad</span>`)
+  ].join("");
+  $("#recipe").innerHTML = `
+    <button class="close" type="button" aria-label="Close recipe"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="recipe-hero" style="background:#F3EEE8">${dish(r, `Illustration of ${esc(r.name)}, a ${esc(r.cuisine)} dish`, "hero")}</div>
+    <div class="recipe-body">
+      <div class="crumbs">Recipes / <b>${esc(r.cuisine)}</b></div>
+      <h2 id="rTitle">${esc(r.name)}</h2>
+      <div class="status">${status}</div>
+      <div class="facts">
+        <div>Total time<strong>${r.time} min</strong></div>
+        <div>Servings<strong class="stepper"><button type="button" data-scale="-1" aria-label="Fewer servings">−</button><span aria-live="polite">${serves}</span><button type="button" data-scale="1" aria-label="More servings">+</button></strong></div>
+        <div>To buy<strong>${r.missing.length ? r.missing.length + " item" + (r.missing.length>1?"s":"") : "Nothing"}</strong></div>
+        <div>Good for<strong>${r.tags.filter(t=>["breakfast","lunch","dinner"].includes(t)).map(cap).join(", ")}</strong></div>
+      </div>
+      <div class="cols">
+        <section>
+          <h3>Ingredients</h3>
+          ${r.have.length ? `<p class="ing-label">You have<small>${r.have.length} of ${r.ingredients.length}</small></p>
+          <ul class="ing">${r.have.map(i => `<li class="have"><span class="mark" aria-hidden="true">✓</span><span><span class="item">${esc(i)}</span>${expiring.includes(i)?`<span class="tag">use soon</span>`:""}<span class="amt">${esc(scaleAmt(r.amounts[i]))}</span></span></li>`).join("")}</ul>` : ""}
+          ${r.missing.length ? `<p class="ing-label">You need<small>${r.missing.length} to buy</small></p>
+          <ul class="ing">${r.missing.map(i => `<li class="need"><span class="mark" aria-hidden="true">+</span><span><span class="item">${esc(i)}</span><span class="amt">${esc(scaleAmt(r.amounts[i]))}</span>${SUBS[i]?`<span class="swap"><b>Swap:</b> ${esc(SUBS[i])}</span>`:""}</span></li>`).join("")}</ul>` : `<p class="ing-label">You need<small>nothing</small></p><p style="margin:0 0 18px;color:var(--muted)">Everything for this recipe is already in your kitchen.</p>`}
+          <div class="recipe-actions">
+            ${r.missing.length ? `<button class="btn" type="button" data-plan ${inList?"disabled":""}>${inList?"Added to grocery list":"Add missing ingredients to grocery list"}</button>` : ""}
+            <button class="btn ghost" type="button" data-saver>${savedR.includes(r.name) ? "Saved ✓" : "Save recipe"}</button>
+            <button class="btn ghost" type="button" data-cooked>Mark as cooked</button>
+            <button class="btn ghost" type="button" data-print>Print</button>
+          </div>
+        </section>
+        <section>
+          <h3>Directions</h3>
+          <p class="dirs-note">Tap a step to check it off as you cook.</p>
+          <ol class="dirs">${r.steps.map((s,n) => `<li class="${doneSteps.has(n)?"done":""}" data-step="${n}" tabindex="0">${esc(s)}</li>`).join("")}</ol>
+        </section>
+      </div>
+    </div>`;
+}
+$("#overlay").addEventListener("click", e => {
+  if(e.target.id === "overlay" || e.target.closest(".close")) return closeRecipe();
+  const sc = e.target.closest("[data-scale]");
+  if(sc){ const base = RECIPES.find(x => x.name === openName).servings; serv = Math.min(12, Math.max(1, serv + (+sc.dataset.scale))); scale = serv / base; renderRecipe(); return; }
+  if(e.target.closest("[data-plan]")){ if(!planned.includes(openName)){ planned = [...planned, openName]; save(); renderList(); toast(`Added missing items for ${openName}`); } renderRecipe(); return; }
+  if(e.target.closest("[data-print]")) return window.print();
+  if(e.target.closest("[data-saver]")){ savedR = savedR.includes(openName) ? savedR.filter(n => n !== openName) : [...savedR, openName]; save(); renderRecipe(); renderGrid(); toast(savedR.includes(openName) ? "Saved. Find it under Saved recipes" : "Removed from saved"); return; }
+  if(e.target.closest("[data-cooked]")){ const r = RECIPES.find(x => x.name === openName); const used = r.ingredients.filter(i => expiring.includes(i));
+    pantry = pantry.filter(i => !used.includes(i)); expiring = expiring.filter(i => !used.includes(i)); planned = planned.filter(n => n !== openName); save();
+    closeRecipe(); renderChips(); renderGrid(); renderList(); toast(used.length ? `Nice. Used up your ${used.join(" and ")}, removed from your kitchen` : "Nice. Marked as cooked"); return; }
+  const st = e.target.closest("[data-step]");
+  if(st){ const n = +st.dataset.step; doneSteps.has(n) ? doneSteps.delete(n) : doneSteps.add(n); st.classList.toggle("done"); }
+});
+$("#overlay").addEventListener("keydown", e => {
+  const st = e.target.closest("[data-step]");
+  if(st && (e.key==="Enter"||e.key===" ")){ e.preventDefault(); st.click(); }
+});
+
+/* ---------- grocery list ---------- */
+const AISLES = [["Produce",["garlic","onion","carrot","celery","bell pepper","spinach","tomato","potato","cauliflower","broccoli","zucchini","cucumber","lettuce","lime","lemon","banana","berries","basil","parsley","cilantro","mint","green onion","ginger","bean sprouts"]],["Meat and seafood",["chicken breast","ground turkey","ground pork","salmon"]],["Dairy and eggs",["egg","milk","yogurt","butter","cheese","parmesan","mozzarella"]],["Spices",["cumin","paprika","chili powder","red pepper flakes","turmeric","garam masala","curry powder","thyme"]]];
+const aisleOf = i => (AISLES.find(a => a[1].includes(i)) || ["Pantry"])[0];
+function groceries(){
+  const g = {};
+  planned.forEach(name => {
+    const r = RECIPES.find(x => x.name === name); if(!r) return;
+    r.ingredients.filter(i => !pantry.includes(i)).forEach(i => (g[i] = g[i] || []).push({name, amt:r.amounts[i]}));
+  });
+  return g;
+}
+function renderList(){
+  const g = groceries(), items = Object.keys(g).sort();
+  $("#listCount").textContent = items.length;
+  if(!planned.length){
+    $("#listBody").innerHTML = `<div class="empty"><strong>Your grocery list is empty</strong>Open a recipe and choose "Add missing ingredients to grocery list." Everything you need gets combined here, grouped by aisle.</div>`;
+    return;
+  }
+  $("#listBody").innerHTML = `
+    <p class="label-sm">Planned recipes</p>
+    <div class="planned">${planned.map(n => `<span>${esc(n)}<button type="button" data-unplan="${esc(n)}" aria-label="Remove ${esc(n)}">✕</button></span>`).join("")}</div>
+    <p class="label-sm">${items.length} item${items.length===1?"":"s"} to buy, combined across ${planned.length} recipe${planned.length===1?"":"s"}</p>
+    ${items.length ? ["Produce","Meat and seafood","Dairy and eggs","Spices","Pantry"].filter(a => items.some(i => aisleOf(i)===a)).map(a => `<p class="label-sm" style="margin-top:14px">${a}</p><ul class="glist">${items.filter(i => aisleOf(i)===a).map(i => `<li><label><input type="checkbox" data-check="${esc(i)}" ${checked.includes(i)?"checked":""}><span><span class="item">${esc(i)}</span><small>${g[i].map(u => `${esc(u.amt)} for ${esc(u.name)}`).join("<br>")}</small></span></label></li>`).join("")}</ul>`).join("")
+      : `<div class="empty"><strong>You already have everything</strong>Nothing to buy for these recipes.</div>`}`;
+}
+$("#listBody").addEventListener("click", e => {
+  const u = e.target.closest("[data-unplan]");
+  if(u){ planned = planned.filter(n => n !== u.dataset.unplan); save(); renderList(); if(openName) renderRecipe(); }
+});
+$("#listBody").addEventListener("change", e => {
+  const c = e.target.closest("[data-check]"); if(!c) return;
+  const i = c.dataset.check; checked = c.checked ? [...checked, i] : checked.filter(x => x !== i); save();
+});
+function openList(){ renderList(); $("#drawer").classList.add("open"); $("#scrim").classList.add("open"); $("#drawer").setAttribute("aria-hidden","false"); $("#closeList").focus(); }
+function closeList(){ $("#drawer").classList.remove("open"); $("#scrim").classList.remove("open"); $("#drawer").setAttribute("aria-hidden","true"); }
+$("#openList").addEventListener("click", openList);
+$("#closeList").addEventListener("click", closeList);
+$("#scrim").addEventListener("click", closeList);
+$("#clearList").addEventListener("click", () => { planned = []; checked = []; save(); renderList(); if(openName) renderRecipe(); });
+$("#copyList").addEventListener("click", async () => {
+  const g = groceries(), items = Object.keys(g).sort();
+  if(!items.length) return toast("Your list is empty");
+  const text = "Grocery list\n" + items.map(i => `- ${cap(i)} (${g[i].map(u => u.amt).join("; ")})`).join("\n");
+  try{ await navigator.clipboard.writeText(text); toast("Copied to clipboard"); }
+  catch(err){ const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select();
+    try{ document.execCommand("copy"); toast("Copied to clipboard"); }catch(e2){ toast("Copy isn't available here"); } t.remove(); }
+});
+
+/* ---------- misc ---------- */
+document.querySelectorAll("[data-go]").forEach(b => b.addEventListener("click", () => document.getElementById(b.dataset.go).scrollIntoView({block:"start"})));
+document.addEventListener("keydown", e => { if(e.key==="Escape"){ if($("#overlay").classList.contains("open")) closeRecipe(); else closeList(); } });
+let tt; function toast(m){ const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 2200); }
+$("#factRecipes").textContent = RECIPES.length;
+$("#factCuisines").textContent = new Set(RECIPES.map(r => r.cuisine)).size;
+
+function renderTonight(){
+  const list = RECIPES.map(score).sort((a,b) => b.rescue.length - a.rescue.length || a.missing.length - b.missing.length || b.pct - a.pct);
+  const r = list[0];
+  if(!pantry.length){ $("#tonight").hidden = true; return; }
+  $("#tonight").hidden = false;
+  const why = r.rescue.length ? `Uses your ${r.rescue.join(" and ")} before ${r.rescue.length>1?"they go":"it goes"} bad.` : !r.missing.length ? "You have every ingredient." : "Your closest match right now.";
+  const need = r.missing.length ? `You'd need to pick up ${r.missing.length} item${r.missing.length>1?"s":""}.` : "Nothing to buy.";
+  $("#tonight").innerHTML = `<div class="thumb" style="background:#F3EEE8">${dish(r, `Illustration of ${esc(r.name)}`, "tonight")}</div>
+    <div class="in"><div class="kicker">Best match for your kitchen</div><h2>${esc(r.name)}</h2><p>Uses ${r.have.length} of your ${r.ingredients.length} ingredients${r.rescue.length ? ` and prioritizes ${esc(r.rescue.join(" and "))} marked "Use soon"` : ""}. ${need} Ready in ${r.time} minutes.</p>
+    <button class="btn" type="button" data-open="${esc(r.name)}">See the recipe</button></div>`;
+}
+$("#tonight").addEventListener("click", e => { const c = e.target.closest("[data-open]"); if(c) openRecipe(c.dataset.open); });
+function renderWelcome(){ $("#welcome").hidden = onboarded; }
+function loadSample(){ pantry = [...SAMPLE]; expiring = ["spinach"]; onboarded = true; save(); renderWelcome(); renderChips(); renderGrid(); renderList(); toast("Sample kitchen loaded. Spinach is marked use soon"); }
+$("#trySample").addEventListener("click", loadSample);
+$("#loadSample").addEventListener("click", loadSample);
+$("#startEmpty").addEventListener("click", () => { onboarded = true; save(); renderWelcome(); input.focus(); });
+renderWelcome(); renderCats(); renderChips(); renderGrid(); renderList();
+</script>
+</body>
+</html>
